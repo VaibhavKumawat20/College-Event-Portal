@@ -1,0 +1,111 @@
+import User from '../models/User.js';
+import jwt from 'jsonwebtoken';
+
+const generateToken = (id) => {
+    return jwt.sign({ id }, process.env.JWT_SECRET, {
+        expiresIn: '30d',
+    });
+};
+
+// @desc    Auth user & get token
+// @route   POST /api/auth/login
+// @access  Public
+export const loginUser = async (req, res) => {
+    const { email, password, role } = req.body;
+
+    try {
+        const user = await User.findOne({ email });
+
+        if (user && (await user.matchPassword(password))) {
+            // Check role if needed, or just return user info
+            if (role && user.role !== role) {
+                // Optional: enforce role check strictly at login if you want separate login forms
+                // For now, we allow login if creds match, but client should handle redirection
+                // However, let's just warn if role mismatch? Or ignore.
+                // Let's enforce it if provided.
+                return res.status(401).json({ message: 'Invalid role for this user' });
+            }
+
+            // Set cookie
+            const token = generateToken(user._id);
+            res.cookie('jwt', token, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV !== 'development', // Use secure cookies in production
+                sameSite: 'strict',
+                maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+            });
+
+            res.json({
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                department: user.department,
+                year: user.year,
+            });
+        } else {
+            res.status(401).json({ message: 'Invalid email or password' });
+        }
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Register a new user
+// @route   POST /api/auth/register
+// @access  Public
+export const registerUser = async (req, res) => {
+    const { name, email, password, role, department, year } = req.body;
+
+    try {
+        const userExists = await User.findOne({ email });
+
+        if (userExists) {
+            return res.status(400).json({ message: 'User already exists' });
+        }
+
+        const user = await User.create({
+            name,
+            email,
+            password,
+            role: role || 'student', // Default to student
+            department,
+            year,
+        });
+
+        if (user) {
+            // Set cookie
+            const token = generateToken(user._id);
+            res.cookie('jwt', token, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV !== 'development',
+                sameSite: 'strict',
+                maxAge: 30 * 24 * 60 * 60 * 1000,
+            });
+
+            res.status(201).json({
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                department: user.department,
+                year: user.year,
+            });
+        } else {
+            res.status(400).json({ message: 'Invalid user data' });
+        }
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Logout user / clear cookie
+// @route   POST /api/auth/logout
+// @access  Public
+export const logoutUser = (req, res) => {
+    res.cookie('jwt', '', {
+        httpOnly: true,
+        expires: new Date(0),
+    });
+    res.status(200).json({ message: 'Logged out successfully' });
+};
