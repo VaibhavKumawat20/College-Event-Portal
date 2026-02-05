@@ -11,8 +11,26 @@ const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(express.json());
+
+// Request logger
+app.use((req, res, next) => {
+    console.log(`${req.method} ${req.url} | Origin: ${req.headers.origin}`);
+    next();
+});
+
+// Update CORS to allow any localhost
 app.use(cors({
-    origin: 'http://localhost:5173', // Vite default port
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+
+        if (origin.startsWith('http://localhost')) {
+            return callback(null, true);
+        }
+
+        const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+        return callback(new Error(msg), false);
+    },
     credentials: true
 }));
 app.use(cookieParser());

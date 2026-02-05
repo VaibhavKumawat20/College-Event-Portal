@@ -1,11 +1,19 @@
-import { Link } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Menu, X, LogIn, User } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 import { useState } from 'react';
 
 const Navbar = () => {
     const { user, logout } = useAuth();
     const [isOpen, setIsOpen] = useState(false);
+
+    const navLinkClass = ({ isActive }) =>
+        `px-3 py-2 rounded-md text-sm font-medium transition-colors ${isActive ? 'bg-slate-800 text-white' : 'text-gray-300 hover:text-white hover:bg-slate-800/50'
+        }`;
+
+    const mobileLinkClass = ({ isActive }) =>
+        `block px-3 py-2 rounded-md text-base font-medium transition-colors ${isActive ? 'bg-slate-800 text-white' : 'text-gray-300 hover:text-white hover:bg-slate-800/50'
+        }`;
 
     return (
         <nav className="bg-slate-900 border-b border-slate-800 sticky top-0 z-50">
@@ -18,27 +26,27 @@ const Navbar = () => {
                     </div>
                     <div className="hidden md:block">
                         <div className="ml-10 flex items-baseline space-x-4">
-                            <Link to="/" className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Home</Link>
-                            <Link to="/events" className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Events</Link>
-                            <Link to="/achievements" className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">Achievements</Link>
+                            <NavLink to="/" className={navLinkClass} end>Home</NavLink>
+                            <NavLink to="/events" className={navLinkClass}>Events</NavLink>
+                            <NavLink to="/achievements" className={navLinkClass}>Achievements</NavLink>
 
                             {user ? (
                                 <>
-                                    <Link to={user.role === 'admin' ? '/admin' : '/dashboard'} className="text-blue-400 hover:text-blue-300 px-3 py-2 rounded-md text-sm font-medium">
+                                    <NavLink to={user.role === 'admin' ? '/admin' : '/dashboard'} className={navLinkClass}>
                                         Dashboard
-                                    </Link>
-                                    <button onClick={logout} className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
+                                    </NavLink>
+                                    <button onClick={logout} className="text-gray-300 hover:text-white hover:bg-slate-800/50 px-3 py-2 rounded-md text-sm font-medium transition-colors">
                                         Logout
                                     </button>
                                 </>
                             ) : (
                                 <div className="flex space-x-2 ml-4">
-                                    <Link to="/login" className="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors border border-slate-700">
+                                    <NavLink to="/login" className="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors border border-slate-700">
                                         Login
-                                    </Link>
-                                    <Link to="/register" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
+                                    </NavLink>
+                                    <NavLink to="/register" className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
                                         Register
-                                    </Link>
+                                    </NavLink>
                                 </div>
                             )}
                         </div>
@@ -54,18 +62,18 @@ const Navbar = () => {
             {isOpen && (
                 <div className="md:hidden">
                     <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-slate-900">
-                        <Link to="/" className="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Home</Link>
-                        <Link to="/events" className="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Events</Link>
-                        <Link to="/achievements" className="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Achievements</Link>
+                        <NavLink to="/" className={mobileLinkClass} end onClick={() => setIsOpen(false)}>Home</NavLink>
+                        <NavLink to="/events" className={mobileLinkClass} onClick={() => setIsOpen(false)}>Events</NavLink>
+                        <NavLink to="/achievements" className={mobileLinkClass} onClick={() => setIsOpen(false)}>Achievements</NavLink>
                         {user ? (
                             <>
-                                <Link to={user.role === 'admin' ? '/admin' : '/dashboard'} className="text-blue-400 hover:text-blue-300 block px-3 py-2 rounded-md text-base font-medium">Dashboard</Link>
-                                <button onClick={logout} className="text-gray-300 hover:text-white block w-full text-left px-3 py-2 rounded-md text-base font-medium">Logout</button>
+                                <NavLink to={user.role === 'admin' ? '/admin' : '/dashboard'} className={mobileLinkClass} onClick={() => setIsOpen(false)}>Dashboard</NavLink>
+                                <button onClick={() => { logout(); setIsOpen(false); }} className="text-gray-300 hover:text-white block w-full text-left px-3 py-2 rounded-md text-base font-medium">Logout</button>
                             </>
                         ) : (
                             <>
-                                <Link to="/login" className="text-gray-300 hover:text-white block px-3 py-2 rounded-md text-base font-medium">Login</Link>
-                                <Link to="/register" className="text-blue-500 hover:text-blue-400 block px-3 py-2 rounded-md text-base font-medium">Register</Link>
+                                <NavLink to="/login" className={mobileLinkClass} onClick={() => setIsOpen(false)}>Login</NavLink>
+                                <NavLink to="/register" className="text-blue-500 hover:text-blue-400 block px-3 py-2 rounded-md text-base font-medium" onClick={() => setIsOpen(false)}>Register</NavLink>
                             </>
                         )}
                     </div>

@@ -24,7 +24,9 @@ const Register = () => {
             await register({ ...formData, role: 'student' }); // Force student role
             navigate('/dashboard');
         } catch (err) {
-            setError(err.response?.data?.message || 'Registration failed');
+            console.error("Registration failed:", err);
+            const msg = err.response?.data?.message || err.message || 'Registration failed';
+            setError(msg);
         }
     };
 

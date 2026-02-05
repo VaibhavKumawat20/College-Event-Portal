@@ -13,10 +13,27 @@ const Login = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await login(email, password, role);
-            navigate(role === 'admin' ? '/admin' : '/dashboard');
+            const userData = await login(email, password, role);
+
+            // CHECK: If user logged in but role doesn't match the selected tab
+            if (userData.role !== role) {
+                // Option A: Auto-redirect them to their actual role
+                // Option B: Show an error (we'll do error for clarity, or auto-redirect)
+
+                // Let's auto-redirect for better UX, but warn them?
+                // Actually, if I am a student and I login on Admin tab, I should just go to Student Dashboard.
+                if (userData.role === 'admin') {
+                    navigate('/admin');
+                } else {
+                    navigate('/dashboard');
+                }
+            } else {
+                navigate(role === 'admin' ? '/admin' : '/dashboard');
+            }
+
         } catch (err) {
-            setError(err.response?.data?.message || 'Login failed');
+            console.error("Login Error:", err);
+            setError(err.response?.data?.message || 'Login failed. Check server connection.');
         }
     };
 

@@ -18,13 +18,8 @@ export const loginUser = async (req, res) => {
 
         if (user && (await user.matchPassword(password))) {
             // Check role if needed, or just return user info
-            if (role && user.role !== role) {
-                // Optional: enforce role check strictly at login if you want separate login forms
-                // For now, we allow login if creds match, but client should handle redirection
-                // However, let's just warn if role mismatch? Or ignore.
-                // Let's enforce it if provided.
-                return res.status(401).json({ message: 'Invalid role for this user' });
-            }
+            // Role check removed to allow frontend to handle redirection based on actual user role
+            // if (role && user.role !== role) { ... }
 
             // Set cookie
             const token = generateToken(user._id);
@@ -55,6 +50,7 @@ export const loginUser = async (req, res) => {
 // @route   POST /api/auth/register
 // @access  Public
 export const registerUser = async (req, res) => {
+    console.log("Registering user:", req.body);
     const { name, email, password, role, department, year } = req.body;
 
     try {
@@ -95,6 +91,7 @@ export const registerUser = async (req, res) => {
             res.status(400).json({ message: 'Invalid user data' });
         }
     } catch (error) {
+        console.error("Registration Error:", error);
         res.status(500).json({ message: error.message });
     }
 };
